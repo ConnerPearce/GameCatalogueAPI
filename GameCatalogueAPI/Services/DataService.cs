@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GameCatalogueAPI.Services
@@ -11,36 +12,39 @@ namespace GameCatalogueAPI.Services
     public class DataService
     {
         private IMongoDatabase database;
-        private readonly IMongoCollection<User> _user;
-        private readonly IMongoCollection<Game> _game;
-        private readonly IMongoCollection<Played> _played;
-        private readonly IMongoCollection<Wishlist> _wishlist;
 
         public DataService(IDatabaseSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             database = client.GetDatabase(settings.DatabaseName);
-
-            _user = database.GetCollection<User>(settings.UserCollectionName);
-            _game = database.GetCollection<Game>(settings.GameCollectionName);
-            _played = database.GetCollection<Played>(settings.PlayedCollectionName);
-            _wishlist = database.GetCollection<Wishlist>(settings.WishlistCollectionName);
         }
 
 
         // Grabs all records from any table
         public async Task<IEnumerable<T>> GetAllAsync<T>(string collection)
         {
-            if (collection != "User")
-            {
-                var items = database.GetCollection<T>(collection);
+            var items = database.GetCollection<T>(collection);
 
-                return await items.Find(new BsonDocument()).ToListAsync();
-            }
-            else return null;
-
+            return await items.Find(new BsonDocument()).ToListAsync();
         }
 
+        // Gets games by name
+        public async Task<IEnumerable<Game>> GetGameBySearch(string name)
+        {
+            var items = database.GetCollection<Game>("Game");
+
+            // Used for converting name string to sentance case as in the database everything is stored in sentance case
+            var lowerCase = name.ToLower();
+            // matches the first sentance of the string as well as subsequent sentances
+            var r = new Regex(@"(^[a-z])|\.\s+(.)", RegexOptions.ExplicitCapture);
+            // Replaces the start of every sentance with a capital letter
+            var result = r.Replace(lowerCase, e => e.Value.ToUpper());
+
+            // Creates a filter for all the item. Will find the record where the name contains result
+            var filter = Builders<Game>.Filter.Where(e => e.Name.Contains(result));
+
+            return await items.Find(filter).ToListAsync(); // Returns its findings as a list
+        }
 
         // By making this method generic it can handle grabing records from any collection by the id
         public async Task<T> GetRecordByIdAsync<T>(string collection, string id)
@@ -83,11 +87,14 @@ namespace GameCatalogueAPI.Services
         // Updates a record by ID
         public async Task<bool> UpdateAsync<T>(string id, T item, string collection)
         {
+            var itemId = new ObjectId(id);
             var db = database.GetCollection<T>(collection);
+            var filter = Builders<T>.Filter.Eq("_id", itemId);
             var result = await db.ReplaceOneAsync(
-                new BsonDocument("_id", id),
+                filter,
                 item,
-                new ReplaceOptions { IsUpsert = true });
+                new ReplaceOptions { IsUpsert = true }
+                );
 
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
@@ -95,8 +102,9 @@ namespace GameCatalogueAPI.Services
         // Deletes a record by id
         public async Task<bool> DeleteAsync<T>(string id, string collection)
         {
+            var itemId = new ObjectId(id);
             var item = database.GetCollection<T>(collection);
-            var filter = Builders<T>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", itemId);
 
             if (item == null)
               return false;

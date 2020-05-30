@@ -23,13 +23,15 @@ namespace GameCatalogueAPI.Controllers
         public async Task<ActionResult<IEnumerable<Game>>> GetAllGames()
         {
             var item = await _dataService.GetAllAsync<Game>(collection);
-            if (item != null && item.Count() != 0)
-                return Ok(item);
-            else
+            if (item == null)
+                return BadRequest();
+            else if (item.Count() <= 0)
                 return NotFound();
+            else
+                return Ok(item);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("id={id}")]
         public async Task<ActionResult<Game>> GetGameById(string id)
         {
             var item = await _dataService.GetRecordByIdAsync<Game>(collection, id);
@@ -38,6 +40,19 @@ namespace GameCatalogueAPI.Controllers
                 return NotFound();
             else
                 return Ok(item);
+        }
+
+        [HttpGet("search={name}")]
+        public async Task<ActionResult<IEnumerable<Game>>> GetGameByName(string name)
+        {
+            var items = await _dataService.GetGameBySearch(name);
+
+            if (items == null)
+                return BadRequest();
+            else if (items.Count() <= 0)
+                return NotFound();
+            else
+                return Ok(items);
         }
 
     }

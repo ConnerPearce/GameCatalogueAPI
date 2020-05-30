@@ -20,6 +20,7 @@ namespace GameCatalogueAPI.Models
         public double? Rating { get; set; } // Can be null as some games dont have ratings (NOT AGE RATING)
         public string[] Platform { get; set; }
         public DateTime ReleaseDate { get; set; }
+        public string Image { get; set; }
 
     }
 }

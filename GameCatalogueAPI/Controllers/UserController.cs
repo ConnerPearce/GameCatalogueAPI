@@ -25,13 +25,13 @@ namespace GameCatalogueAPI.Controllers
             var user = await _dataService.GetUserAsync(uName, password);
 
             if (user == null)
-                return BadRequest();
+                return NotFound();
             else
                 return Ok(user);
         }
 
         [HttpPost]
-        public async Task<ActionResult> PostUser([FromBody]User user)
+        public async Task<ActionResult> PostUser(User user)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace GameCatalogueAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> PutUser([FromBody]User user)
+        public async Task<ActionResult> PutUser(User user)
         {
             try
             {
@@ -54,9 +54,9 @@ namespace GameCatalogueAPI.Controllers
 
                 return Ok();
             }
-            catch
+            catch(Exception ex)
             {
-                return BadRequest();
+                return BadRequest($"{ex.Message} {ex.InnerException} {ex.HelpLink}");
             }
 
         }

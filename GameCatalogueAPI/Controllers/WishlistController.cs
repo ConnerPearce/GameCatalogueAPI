@@ -33,7 +33,7 @@ namespace GameCatalogueAPI.Controllers
 
         // Posts a new wishlist item
         [HttpPost]
-        public async Task<ActionResult> PostWishlist([FromBody]Wishlist wishlistItem)
+        public async Task<ActionResult> PostWishlist(Wishlist wishlistItem)
         {
             try
             {

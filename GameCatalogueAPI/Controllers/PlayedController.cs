@@ -30,7 +30,7 @@ namespace GameCatalogueAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> PostPlayed([FromBody]Played playedItem)
+        public async Task<ActionResult> PostPlayed(Played playedItem)
         {
             try
             {
