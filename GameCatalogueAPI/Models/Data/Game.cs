@@ -11,16 +11,19 @@ namespace GameCatalogueAPI.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-
-        public string Name { get; set; }
+        public string id { get; set; }
+        [BsonElement("Name")] // This specifys that the database has a different name to the property
+        public string name { get; set; }
+        [BsonElement("ReleaseDate")] // For the sake of making my app generic i made the names the same as the RAWG Api
+        public DateTime released { get; set; }
+        [BsonElement("Image")]
+        public string background_image { get; set; }
         public string Summary { get; set; }
         public string Genre { get; set; }
         public string Developer { get; set; }
         public double? Rating { get; set; } // Can be null as some games dont have ratings (NOT AGE RATING)
         public string[] Platform { get; set; }
-        public DateTime ReleaseDate { get; set; }
-        public string Image { get; set; }
+
 
     }
 }

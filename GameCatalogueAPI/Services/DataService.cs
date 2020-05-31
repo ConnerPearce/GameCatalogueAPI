@@ -41,7 +41,7 @@ namespace GameCatalogueAPI.Services
             var result = r.Replace(lowerCase, e => e.Value.ToUpper());
 
             // Creates a filter for all the item. Will find the record where the name contains result
-            var filter = Builders<Game>.Filter.Where(e => e.Name.Contains(result));
+            var filter = Builders<Game>.Filter.Where(e => e.name.Contains(result));
 
             return await items.Find(filter).ToListAsync(); // Returns its findings as a list
         }
@@ -49,10 +49,11 @@ namespace GameCatalogueAPI.Services
         // By making this method generic it can handle grabing records from any collection by the id
         public async Task<T> GetRecordByIdAsync<T>(string collection, string id)
         {
+            var itemId = new ObjectId(id);
             var item = database.GetCollection<T>(collection);
-            var filter = Builders<T>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", itemId);
 
-            return await item.Find(filter).FirstAsync();
+            return await item.Find(filter).FirstOrDefaultAsync();
         }
 
         // Gets the user
@@ -62,7 +63,7 @@ namespace GameCatalogueAPI.Services
             var item = database.GetCollection<User>("User");
             var filter = Builders<User>.Filter.Where(e => e.UName == uName && e.Pwrd == pwrd);
 
-            return await item.Find(filter).FirstAsync();
+            return await item.Find(filter).FirstOrDefaultAsync();
         }
 
         // Gets multiple records by Id
